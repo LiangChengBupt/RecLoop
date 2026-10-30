@@ -16,6 +16,8 @@ RecLoop separates persistent cross-loop memory from the working state of a loope
 
 The paper PDF includes supplementary experiments. The project page is a buildless static website suitable for GitHub Pages; no package installation is required.
 
+To publish the website, open **Settings → Pages**, choose **Deploy from a branch**, and select **main / (root)**.
+
 Experiments cover model scales from 71M to 1.06B parameters and loop counts from 3 to 12 under a 10B-token FineWeb-Edu training budget. Scaling-law fits indicate approximately 11% fewer parameters at matched validation loss. See the paper for the evaluation protocol and limitations.
 
 This repository contains the paper and project website. Training implementation is not included.
