@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RecLoop separates persistent cross-loop memory from the working state of looped Transformers, using a shared residualized GRU and Dual-QKV Fusion.">
+  <meta name="theme-color" content="#204bbb">
+  <title>RecLoop · Recurrent State Modeling for Looped Transformers</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="#" aria-label="RecLoop home"><span aria-hidden="true">↻</span> RecLoop</a>
+    <nav aria-label="Main navigation"><a href="#method">Method</a><a href="#results">Results</a><a href="#resources">Paper</a></nav>
+  </header>
+  <main id="main">
+    <section class="hero" aria-labelledby="paper-title">
+      <p class="eyebrow">Memory across iterations. Computation with shared weights.</p>
+      <h1 id="paper-title"><span>RecLoop</span><br>Recurrent State Modeling<br>for Looped Transformers</h1>
+      <p class="hero-description">A dedicated recurrent memory lets each loop build on the history of earlier computation.</p>
+      <div id="authors"><p class="authors">Cheng Liang<sup>1</sup>, Tengfei Zhang<sup>2</sup>, Jianyu Wu<sup>1</sup>, Wenjie DU<sup>3</sup>, Changlian Ma<sup>4</sup>, Ya Zhang<sup>1</sup>, Yanfeng Wang<sup>1,*</sup></p><p class="affiliations"><sup>1</sup> Shanghai Jiaotong University<br><sup>2</sup> University of Science and Technology of China<br><sup>3</sup> Nanyang Technological University · <sup>4</sup> Nanjing University<br><sup>*</sup> Corresponding author</p></div>
+      <div class="actions"><a class="button primary" href="assets/paper/recloop.pdf">Read the paper <span aria-hidden="true">↗</span></a><a class="button secondary" href="https://github.com/LiangChengBupt/RecLoop">GitHub <span aria-hidden="true">↗</span></a></div>
+      <p class="status">Preprint · PDF includes supplementary experiments</p>
+      <div class="highlights" aria-label="Study at a glance">
+        <div><strong>71M–1.06B</strong><span>evaluated parameter scales</span></div>
+        <div><strong>3–12 loops</strong><span>evaluated recurrent depths</span></div>
+        <div><strong>≈11% fewer</strong><span>parameters at matched loss, from scaling fits</span></div>
+      </div>
+    </section>
+
+    <section id="method" class="section" aria-labelledby="method-heading">
+      <div class="section-heading"><span class="section-index">01 / METHOD</span><h2 id="method-heading">Give history its own state.</h2><p>The working representation changes within each loop. A separate, token-aligned memory carries information across loops.</p></div>
+      <figure class="architecture"><a href="assets/figures/architecture.pdf" aria-label="Open the architecture figure as a PDF"><img src="assets/figures/architecture.png" alt="RecLoop architecture: a shared Transformer stack restarts from token embeddings in each iteration, while a residualized GRU updates persistent memory and Dual-QKV Fusion injects that memory into attention." fetchpriority="high"></a><figcaption>A shared residualized GRU accumulates history at loop boundaries. Dual-QKV Fusion gives attention queries, keys, and values access to that history. Transformer and state-transition parameters are shared across loops.</figcaption></figure>
+      <div class="method-details"><div><span class="detail-number">1</span><h3>Restart the working stream</h3><p>Each iteration begins from the same token embeddings, separating its computation from persistent history.</p></div><div><span class="detail-number">2</span><h3>Accumulate recurrent memory</h3><p>A shared residualized GRU updates a full-width, token-aligned state at the first K−1 loop boundaries.</p></div><div><span class="detail-number">3</span><h3>Retrieve through Q, K, and V</h3><p>Learned gates combine current-state and memory projections in all three attention pathways.</p></div></div>
+    </section>
+
+    <section id="results" class="section" aria-labelledby="results-heading">
+      <div class="section-heading"><span class="section-index">02 / RESULTS</span><h2 id="results-heading">A consistent language-modeling gain.</h2><p>All methods are trained from scratch on 10B FineWeb-Edu tokens using 12 shared layers, 6 loops, and an approximately 310M-parameter budget. Lower CE and perplexity are better; higher average accuracy is better.</p></div>
+      <div class="table-wrap" role="region" aria-label="Main results, scroll horizontally on small screens" tabindex="0"><table><caption>Main comparison · 10B tokens · approximately 310M parameters</caption><thead><tr><th scope="col">Method</th><th scope="col">Train CE ↓</th><th scope="col">Held-out PPL ↓</th><th scope="col">LAMBADA PPL ↓</th><th scope="col">Avg. accuracy ↑</th></tr></thead><tbody id="results-body">
+        <tr><td>Vanilla looped</td><td>2.7073</td><td>16.85</td><td>42.88</td><td>43.93%</td></tr>
+<tr><td>Residual Scaling</td><td>2.6840</td><td>16.43</td><td>38.17</td><td>44.71%</td></tr>
+<tr class="unconverged"><td>DeepLoop</td><td>7.5138</td><td>1992.8</td><td>2.8 × 10⁶</td><td>29.11%</td></tr>
+<tr><td>SiameseNorm</td><td>2.6792</td><td>16.348</td><td>35.04</td><td>44.59%</td></tr>
+<tr><td>Parcae</td><td>2.6654</td><td>16.0691</td><td>33.18</td><td>44.64%</td></tr>
+<tr><td>Depth-Attention</td><td>2.6871</td><td>16.496</td><td>39.43</td><td>44.14%</td></tr>
+<tr><td>Block AttnRes</td><td>2.7347</td><td>17.3744</td><td>45.89</td><td>43.64%</td></tr>
+<tr><td>TMLT</td><td>2.6962</td><td>16.6448</td><td>40.45</td><td>44.15%</td></tr>
+<tr><td>MeSH</td><td>2.6778</td><td>16.354</td><td>35.62</td><td>44.38%</td></tr>
+<tr class="ours"><td>RecLoop</td><td>2.6567</td><td>15.9411</td><td>30.35</td><td>45.38%</td></tr>
+      </tbody></table></div>
+      <p class="table-note">The average is over seven zero-shot downstream tasks. Task-wise gains vary; the language-modeling metrics are the primary evidence. DeepLoop did not converge under this shared training recipe and is retained for completeness.</p>
+      <p class="data-link"><a href="assets/results.json">Download the reported results as JSON <span aria-hidden="true">↗</span></a></p>
+      <div class="scaling-grid">
+        <figure><a href="assets/figures/parameter-scaling.pdf"><img src="assets/figures/parameter-scaling.png" alt="Parameter-scaling curves comparing RecLoop with a vanilla looped Transformer from 71M to 1.06B parameters." loading="lazy"></a><figcaption><strong>Parameter scaling.</strong> RecLoop improves validation loss at every matched scale. Joint scaling-law fits estimate approximately 11% fewer parameters at matched loss under a fixed 10B-token training budget.</figcaption></figure>
+        <div class="scaling-text"><span class="section-index">SCALING WITH RECURRENCE</span><h3>Shared weights.<br>Persistent history.</h3><p>RecLoop also improves language modeling at every evaluated loop count, from K=3 through K=12.</p><p>Both architectures show diminishing returns with recurrent depth. RecLoop retains an advantage across the tested range.</p><a class="text-link" href="assets/paper/recloop.pdf">Explore the experiments <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <figure class="wide-figure"><a href="assets/figures/loop-scaling.pdf"><img src="assets/figures/loop-scaling.png" alt="Loop-depth sweep at approximately 310M parameters: RecLoop has lower training loss, held-out perplexity, and LAMBADA perplexity at K=3, 6, 9, and 12." loading="lazy"></a><figcaption><strong>Loop-depth scaling.</strong> A fixed 12-layer shared stack expands from 36 to 144 executed layers as K grows. Both models are trained separately at each K on the same 10B-token budget.</figcaption></figure>
+    </section>
+
+    <section class="section" aria-labelledby="history-heading">
+      <div class="section-heading"><span class="section-index">03 / ANALYSIS</span><h2 id="history-heading">Later loops use the accumulated history.</h2><p>Inference-time interventions shuffle state vectors across token positions, preserving their values and norms while breaking alignment. Disrupting recurrent memory increases final-loop loss at every tested boundary.</p></div>
+      <figure class="wide-figure"><a href="assets/figures/history-knockout.pdf"><img src="assets/figures/history-knockout.png" alt="Causal history-knockout experiments: shuffling recurrent memory at boundaries 2, 3, 4, and 5 increases final-loop cross-entropy by approximately 0.12, 0.20, 0.41, and 0.92 nats." loading="lazy"></a><figcaption>Results from the approximately 310M RecLoop checkpoint, without retraining. The final prediction depends on token-aligned content carried by the recurrent-state pathway.</figcaption></figure>
+    </section>
+
+    <section class="section abstract-section" aria-labelledby="abstract-heading"><span class="section-index">ABSTRACT</span><h2 id="abstract-heading">The paper, in brief.</h2><p id="abstract-text">Looped language models offer a parameter-efficient way to scale computation by repeatedly applying shared Transformer blocks. Yet existing architectures commonly feed the terminal hidden state of one loop directly into the next. This naive handoff forces the same residual stream to act as both the current working representation and the sole carrier of earlier computation, encouraging later loops to revisit rather than selectively build on previous results. We introduce RecLoop, which separates these roles through explicit recurrent state modeling across loops. A shared residualized GRU accumulates a token-aligned memory at loop boundaries, and Dual-QKV Fusion combines this memory with the current working state in attention queries, keys, and values. Thus, each loop can retrieve accumulated history while all Transformer and memory-transition parameters remain shared across iterations. Controlled pretraining experiments across parameter scales and recurrent depths show that RecLoop consistently improves language modeling over matched vanilla looped Transformers, with scaling-law fits indicating approximately 11% fewer parameters at matched validation loss. Causal history knockouts further confirm that later loops use the accumulated recurrent state.</p></section>
+    <section id="resources" class="section resources" aria-labelledby="resources-heading"><div><span class="section-index">04 / RESOURCES</span><h2 id="resources-heading">Read RecLoop.</h2><p>The complete preprint brings together the method, experiments, and supplementary analyses.</p></div><div class="resource-links"><a href="assets/paper/recloop.pdf" download="RecLoop.pdf">Download paper PDF <span aria-hidden="true">↓</span></a><a href="https://github.com/LiangChengBupt/RecLoop">Project repository <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+  <footer><a class="wordmark" href="#">↻ RecLoop</a><p>Recurrent State Modeling for Looped Transformers</p><a href="assets/paper/recloop.pdf">Paper PDF</a></footer>
+</body>
+</html>

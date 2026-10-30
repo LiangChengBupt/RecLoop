@@ -1,0 +1,18 @@
+{
+  "parameter-scaling": {
+    "source": "figures/fig2_loss_scaling_fit.pdf",
+    "sha256": "6c0bb8030617a6c72d5178809494e9a2aab78cbd64e7f905c1ee1005b030bb8a"
+  },
+  "architecture": {
+    "source": "figures/architecture/architecture_v4.pdf",
+    "sha256": "244134c57c6a209baaf2ca3b3e4cf2b0b0c0221a91c3a149ebb541832e39ea29"
+  },
+  "loop-scaling": {
+    "source": "figures/loop-count-sweep-300m-v2.pdf",
+    "sha256": "65a4e96b37dba5010490afba24d2bee09b791cac8ed6d0101b1a79b7c6527726"
+  },
+  "history-knockout": {
+    "source": "figures/history_knockout_en.pdf",
+    "sha256": "3eee213bb411f731bd6f729e8a5b1e3c34d9241783c49fa5740c2b7a850c31e9"
+  }
+}
